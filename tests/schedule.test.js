@@ -7,8 +7,8 @@ import { validDate, monthWeeks, exportCsv, exportText } from '../lib/calendar.js
 test('Text export preserves the exact comma-separated format and legends', () => {
   const lines = exportText(2026, 9, {'2026-10-01': 'WFH'}).split('\r\n');
   assert.equal(lines[0], 'October 2026');
-  assert.equal(lines[1], 'Week,Monday,Tuesday,Wednesday,Thursday,Friday');
-  assert.equal(lines[2], 'Week 1,---,---,---,WFH,UNP');
+  assert.equal(lines[1], 'Week,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday');
+  assert.equal(lines[2], 'Week 1,---,---,---,---,WFH,UNP,UNP');
   assert.equal(exportText(2026, 9, {}), exportCsv(2026, 9, {}));
   assert.ok(lines.includes('UNP - Unplotted'));
   assert.ok(lines.includes('--- - Not part of the month'));
@@ -21,24 +21,25 @@ test('calendar aligns every day with its weekday across leap years and year boun
   }
   assert.equal(validDate('2024-02-29'), true); assert.equal(validDate('2025-02-29'), false); assert.equal(validDate('2026-13-01'), false);
 });
-test('CSV matches the October workweek format and exports statuses only', () => {
+test('CSV matches the October full-week format and exports statuses only', () => {
   const rows = exportCsv(2026, 9, {'2026-10-01':'WFH','2026-10-02':'WFH','2026-10-05':'RTO','2026-10-06':'RTO','2026-10-07':'RTO','2026-10-08':'WFH','2026-10-09':'WFH','2026-10-12':'HOLIDAY','2026-10-13':'LEAVE'}).trim().split('\r\n');
   assert.equal(rows[0], 'October 2026');
-  assert.equal(rows[1], 'Week,Monday,Tuesday,Wednesday,Thursday,Friday');
-  assert.equal(rows[2], 'Week 1,---,---,---,WFH,WFH');
-  assert.equal(rows[3], 'Week 2,RTO,RTO,RTO,WFH,WFH');
-  assert.equal(rows[4], 'Week 3,HOLIDAY,LEAVE,UNP,UNP,UNP');
+  assert.equal(rows[1], 'Week,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday');
+  assert.equal(rows[2], 'Week 1,---,---,---,---,WFH,WFH,UNP');
+  assert.equal(rows[3], 'Week 2,UNP,RTO,RTO,RTO,WFH,WFH,UNP');
+  assert.equal(rows[4], 'Week 3,UNP,HOLIDAY,LEAVE,UNP,UNP,UNP,UNP');
   assert.equal(rows[7], '');
-  assert.ok(rows.slice(1, 7).every(row => row.split(',').length === 6));
+  assert.ok(rows.slice(1, 7).every(row => row.split(',').length === 8));
   assert.deepEqual(rows.slice(8), ['Legends', 'RTO - Return-to-office', 'WFH - Work-from-home', 'UNP - Unplotted', '--- - Not part of the month', 'HOLIDAY - Holiday', 'LEAVE - Leave']);
 });
-test('CSV omits weekend-only weeks and pads the final workweek', () => {
-  const november = exportCsv(2026, 10, {'2026-11-01':'LEAVE'}).split('\r\n\r\n')[0].split('\r\n');
-  assert.equal(november[2], 'Week 1,UNP,UNP,UNP,UNP,UNP');
-  assert.equal(november.at(-1), 'Week 5,UNP,---,---,---,---');
-  assert.ok(!november.join().includes('LEAVE'));
+test('CSV preserves weekend plots and pads partial weeks', () => {
+  const november = exportCsv(2026, 10, {'2026-11-01':'LEAVE','2026-11-07':'RTO'}).split('\r\n\r\n')[0].split('\r\n');
+  assert.equal(november[2], 'Week 1,LEAVE,UNP,UNP,UNP,UNP,UNP,RTO');
+  assert.equal(november.at(-1), 'Week 5,UNP,UNP,---,---,---,---,---');
+  const august = exportCsv(2026, 7, {'2026-08-01':'WFH'}).split('\r\n');
+  assert.equal(august[2], 'Week 1,---,---,---,---,---,---,WFH');
   const february = exportCsv(2024, 1, {'2024-02-29':'RTO'}).split('\r\n\r\n')[0].split('\r\n');
-  assert.equal(february.at(-1), 'Week 5,UNP,UNP,UNP,RTO,---');
+  assert.equal(february.at(-1), 'Week 5,UNP,UNP,UNP,UNP,RTO,---,---');
 });
 
 
@@ -59,5 +60,3 @@ test('loads bundled JSON, then prefers browser edits; clearing remains cleared',
   await assert.rejects(loadPlots(storage, seed));
   assert.equal(values.get(storageKey), 'broken');
 });
-
-

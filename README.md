@@ -24,8 +24,8 @@ npm run preview
 - Monthly Sunday-to-Saturday calendar with previous/next month and Today navigation.
 - Click any date: RTO, WFH, HOLIDAY, LEAVE, CLEAR, CANCEL.
 - CLEAR removes the selected plot; CANCEL and Escape close without changes.
-- The text download starts with the month title (such as `October 2026`), followed by `Week,Monday,Tuesday,Wednesday,Thursday,Friday` and numbered weekly rows.
-- Cells contain only the plotted status or `UNP` (Unplotted). Dates outside the displayed month use `---` (Not part of the month). Weekend-only weeks are omitted; remaining rows are numbered from Week 1.
+- The text download starts with the month title (such as `October 2026`), followed by `Week,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday` and numbered weekly rows.
+- Cells contain only the plotted status or `UNP` (Unplotted). Dates outside the displayed month use `---` (Not part of the month). All weeks are included, including partial weeks with weekend dates; rows are numbered from Week 1.
 - A legend beneath the text schedule explains RTO, WFH, UNP, ---, HOLIDAY, and LEAVE.
 - JSON export backs up all months. Import merges entries and replaces matching dates.
 
